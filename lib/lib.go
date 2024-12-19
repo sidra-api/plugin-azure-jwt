@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
@@ -31,6 +32,7 @@ func VerifyJWT(tokenString, jwksURL string) error {
 	// Decode bagian header JWT dari base64
 	headerBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
 	if err != nil {
+		log.Println("Failed to decode JWT header:", err)
 		return errors.New("failed to decode JWT header")
 	}
 
@@ -38,12 +40,14 @@ func VerifyJWT(tokenString, jwksURL string) error {
 		Kid string `json:"kid"`
 	}
 	if err := json.Unmarshal(headerBytes, &header); err != nil {
+		log.Println("Failed to parse JWT header:", err)
 		return errors.New("failed to parse JWT header")
 	}
 
 	// Get public key by kid
 	publicKey, err := getPublicKey(header.Kid, jwksURL)
 	if err != nil {
+		log.Println("Error fetching public key:", err)
 		return err
 	}
 
@@ -53,22 +57,27 @@ func VerifyJWT(tokenString, jwksURL string) error {
 	}
 	token, err := jwt.Parse(tokenString, keyFunc)
 	if err != nil {
+		log.Println("Failed to verify JWT:", err)
 		return errors.New("failed to verify JWT: " + err.Error())
 	}
 
 	// Pastikan token valid
 	if !token.Valid {
+		log.Println("Invalid JWT token")
 		return errors.New("invalid JWT token")
 	}
 
+	log.Println("JWT verification succeeded")
 	return nil
 }
 
 // Ambil kunci publik dari URL JWKS berdasarkan Key ID (kid)
 func getPublicKey(kid, jwksURL string) (interface{}, error) {
+	log.Println("Fetching JWKS from URL:", jwksURL)
 	// Ambil JWKS dari URL yang diberikan
 	resp, err := http.Get(jwksURL)
 	if err != nil {
+		log.Println("Failed to fetch JWKS:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -76,21 +85,25 @@ func getPublicKey(kid, jwksURL string) (interface{}, error) {
 	// Parse respons menjadi struktur JWKS
 	var jwks JWKS
 	if err := json.NewDecoder(resp.Body).Decode(&jwks); err != nil {
+		log.Println("Failed to decode JWKS response:", err)
 		return nil, err
 	}
 
 	// Find public key by kid
 	for _, key := range jwks.Keys {
 		if key.Kid == kid {
+			log.Println("Public key found for kid:", kid)
 			// Decode sertifikat dari base64
 			certData, err := base64.StdEncoding.DecodeString(key.X5c[0])
 			if err != nil {
+				log.Println("Failed to decode certificate:", err)
 				return nil, err
 			}
 
 			// Parse sertifikat menjadi kunci publik
 			cert, err := x509.ParseCertificate(certData)
 			if err != nil {
+				log.Println("Failed to parse certificate:", err)
 				return nil, err
 			}
 
@@ -98,5 +111,6 @@ func getPublicKey(kid, jwksURL string) (interface{}, error) {
 		}
 	}
 
+	log.Println("Key not found for kid:", kid)
 	return nil, errors.New("key not found")
 }

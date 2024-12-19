@@ -1,4 +1,4 @@
-module github.com/sidra-api/azure-jwt
+module github.com/sidra-api/plugin-azure-jwt
 
 go 1.23.4
 
