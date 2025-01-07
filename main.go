@@ -14,7 +14,7 @@ func main() {
 	// Ambil nama plugin dari environment variable
 	pluginName := os.Getenv("PLUGIN_NAME")
 	if pluginName == "" {
-		pluginName = "azure-jwt-validator" // Default value jika tidak diatur
+		pluginName = "azure-jwt" // Default value jika tidak diatur
 		log.Println("PLUGIN_NAME environment variable is not set, using default:", pluginName)
 	}
 
