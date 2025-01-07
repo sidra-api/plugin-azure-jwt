@@ -20,7 +20,7 @@ This plugin validates JWT tokens using Azure's JSON Web Key Set (JWKS). It fetch
 
 The plugin uses the following environment variables:
 
-- `PLUGIN_NAME`: The name of the plugin (default: `azure-jwt-validator`).
+- `PLUGIN_NAME`: The name of the plugin (default: `azure-jwt`).
 - `JWKS_URL`: The URL to the Azure JWKS endpoint (e.g., `https://login.microsoftonline.com/{tenantId}/discovery/v2.0/keys`).
 
 ## Installation
@@ -48,13 +48,13 @@ To use this plugin, follow these steps:
 4. Build the plugin:
 
     ```bash
-    go build -o azure-jwt-validator
+    go build -o azure-jwt
     ```
 
 5. Set the required environment variables:
 
     ```bash
-    export PLUGIN_NAME="azure-jwt-validator"
+    export PLUGIN_NAME="azure-jwt"
     export JWKS_URL="https://login.microsoftonline.com/{tenantId}/discovery/v2.0/keys"
     ```
 
@@ -63,12 +63,12 @@ To use this plugin, follow these steps:
 6. Run the plugin:
 
     ```bash
-    ./azure-jwt-validator
+    ./azure-jwt
     ```
 
 ## Configuration
 
-- `PLUGIN_NAME`: Set this environment variable to specify the plugin name. It defaults to `azure-jwt-validator` if not set.
+- `PLUGIN_NAME`: Set this environment variable to specify the plugin name. It defaults to `azure-jwt` if not set.
 - `JWKS_URL`: This is the URL where the public keys (JWKS) are hosted by Azure. This must be set in your environment to ensure the plugin can fetch the public key for token validation.
 
 ## Usage
