@@ -31,7 +31,7 @@ func main() {
 // Fungsi handler untuk memvalidasi JWT dari request
 func validateJWT(req server.Request) server.Response {
 	// Ambil token dari header Authorization
-	token := req.Headers["authorization"]
+	token := req.Headers["Authorization"]
 	if token == "" {
 		log.Println("Authorization header is missing")
 		return server.Response{
