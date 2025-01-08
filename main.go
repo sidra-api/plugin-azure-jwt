@@ -2,23 +2,22 @@ package main
 
 import (
 	"log"
-	"os"
 	"net/http"
+	"os"
 
-	"github.com/sidra-gateway/go-pdk/server"
 	"github.com/sidra-api/plugin-azure-jwt/lib"
-	
+	"github.com/sidra-gateway/go-pdk/server"
 )
 
 func main() {
-	// Ambil nama plugin dari environment variable
-	pluginName := os.Getenv("PLUGIN_NAME")
+	pluginName := os.Getenv("PLUGIN_NAME")	
+	log.Println("This is a test log entry")
 	if pluginName == "" {
 		pluginName = "azure-jwt" // Default value jika tidak diatur
 		log.Println("PLUGIN_NAME environment variable is not set, using default:", pluginName)
 	}
 
-	// Buat server plugin baru 
+	// Buat server plugin baru
 	jwtValidator := server.NewServer(pluginName, validateJWT)
 
 	// Jalankan server plugin
@@ -30,7 +29,7 @@ func main() {
 
 // Fungsi handler untuk memvalidasi JWT dari request
 func validateJWT(req server.Request) server.Response {
-	// Ambil token dari header Authorization
+	// Ambil token dari header Authorization	
 	token := req.Headers["Authorization"]
 	if token == "" {
 		log.Println("Authorization header is missing")
@@ -39,7 +38,8 @@ func validateJWT(req server.Request) server.Response {
 			Body:       "Missing Authorization header",
 		}
 	}
-
+	token = token[7:] // Hapus "Bearer " dari
+	log.Default().Println("Token:", token)
 	// Ambil JWKS URL dari environment variable
 	jwksURL := os.Getenv("JWKS_URL")
 	if jwksURL == "" {
@@ -49,6 +49,7 @@ func validateJWT(req server.Request) server.Response {
 			Body:       "Environment variable JWKS_URL is not set",
 		}
 	}
+	
 
 	// Panggil fungsi VerifyJWT untuk memverifikasi token
 	err := lib.VerifyJWT(token, jwksURL)
