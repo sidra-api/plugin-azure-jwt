@@ -83,7 +83,7 @@ func validateJWT(req server.Request) server.Response {
 			headers[key] = fmt.Sprintf("%v", value)
 		}
 	}
-
+	headers["sub"] = headers["oid"]
 	log.Println("JWT is valid")
 	return server.Response{
 		StatusCode: http.StatusOK,
