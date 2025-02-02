@@ -73,7 +73,15 @@ func validateJWT(req server.Request) server.Response {
 
 	headers := make(map[string]string)
 	for key, value := range claims {
-		headers[key] = fmt.Sprintf("%v", value)
+		if key == "sub" {
+			continue
+		}
+		switch v := value.(type) {
+		case float64:
+			headers[key] = fmt.Sprintf("%.0f", v)
+		default:
+			headers[key] = fmt.Sprintf("%v", value)
+		}
 	}
 
 	log.Println("JWT is valid")
