@@ -22,18 +22,18 @@ type JWKS struct {
 }
 
 // Fungsi utama untuk memverifikasi JWT
-func VerifyJWT(tokenString, jwksURL string) error {
+func VerifyJWT(tokenString, jwksURL string) (*jwt.Token, error) {
 	// Pisahkan JWT menjadi tiga bagian (header, payload, signature)
 	parts := strings.Split(tokenString, ".")
 	if len(parts) < 2 {
-		return errors.New("invalid JWT format")
+		return nil, errors.New("invalid JWT format")
 	}
 
 	// Decode bagian header JWT dari base64
 	headerBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
 	if err != nil {
 		log.Println("Failed to decode JWT header:", err)
-		return errors.New("failed to decode JWT header")
+		return nil, errors.New("failed to decode JWT header")
 	}
 
 	var header struct {
@@ -41,14 +41,14 @@ func VerifyJWT(tokenString, jwksURL string) error {
 	}
 	if err := json.Unmarshal(headerBytes, &header); err != nil {
 		log.Println("Failed to parse JWT header:", err)
-		return errors.New("failed to parse JWT header")
+		return nil, errors.New("failed to parse JWT header")
 	}
 
 	// Get public key by kid
 	publicKey, err := getPublicKey(header.Kid, jwksURL)
 	if err != nil {
 		log.Println("Error fetching public key:", err)
-		return err
+		return nil, err
 	}
 
 	// Verifikasi JWT menggunakan kunci publik
@@ -58,17 +58,17 @@ func VerifyJWT(tokenString, jwksURL string) error {
 	token, err := jwt.Parse(tokenString, keyFunc)
 	if err != nil {
 		log.Println("Failed to verify JWT:", err)
-		return errors.New("failed to verify JWT: " + err.Error())
+		return nil, errors.New("failed to verify JWT: " + err.Error())
 	}
 
 	// Pastikan token valid
 	if !token.Valid {
 		log.Println("Invalid JWT token")
-		return errors.New("invalid JWT token")
+		return nil, errors.New("invalid JWT token")
 	}
 
 	log.Println("JWT verification succeeded")
-	return nil
+	return token, nil
 }
 
 // Ambil kunci publik dari URL JWKS berdasarkan Key ID (kid)

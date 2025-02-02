@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"github.com/golang-jwt/jwt/v4"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +12,7 @@ import (
 )
 
 func main() {
-	pluginName := os.Getenv("PLUGIN_NAME")	
+	pluginName := os.Getenv("PLUGIN_NAME")
 	log.Println("This is a test log entry")
 	if pluginName == "" {
 		pluginName = "azure-jwt" // Default value jika tidak diatur
@@ -29,7 +31,7 @@ func main() {
 
 // Fungsi handler untuk memvalidasi JWT dari request
 func validateJWT(req server.Request) server.Response {
-	// Ambil token dari header Authorization	
+	// Ambil token dari header Authorization
 	token := req.Headers["Authorization"]
 	if token == "" {
 		log.Println("Authorization header is missing")
@@ -49,10 +51,9 @@ func validateJWT(req server.Request) server.Response {
 			Body:       "Environment variable JWKS_URL is not set",
 		}
 	}
-	
 
 	// Panggil fungsi VerifyJWT untuk memverifikasi token
-	err := lib.VerifyJWT(token, jwksURL)
+	tokenParsed, err := lib.VerifyJWT(token, jwksURL)
 	if err != nil {
 		log.Println("Invalid token :", err)
 		return server.Response{
@@ -61,10 +62,24 @@ func validateJWT(req server.Request) server.Response {
 		}
 	}
 
-	// Jika token valid
+	claims, ok := tokenParsed.Claims.(jwt.MapClaims)
+	if !ok {
+		log.Println("Failed to parse claims")
+		return server.Response{
+			StatusCode: http.StatusInternalServerError,
+			Body:       "Failed to parse claims",
+		}
+	}
+
+	headers := make(map[string]string)
+	for key, value := range claims {
+		headers[key] = fmt.Sprintf("%v", value)
+	}
+
 	log.Println("JWT is valid")
 	return server.Response{
 		StatusCode: http.StatusOK,
 		Body:       "JWT is valid",
+		Headers:    headers,
 	}
 }
